@@ -14,7 +14,7 @@ npx skills update to-prd
 
 `to-prd` turns the current conversation and your codebase understanding into a product requirements document, then publishes it to your issue tracker.
 
-The load-bearing constraint: it does **not** interview you again. By the time you reach for it, the alignment work is done — `to-prd` synthesises what is already known rather than asking a fresh round of questions.
+It does **not** interview you again. By the time you reach for it, the alignment work is done — `to-prd` synthesises what is already known rather than asking a fresh round of questions.
 
 ## When to reach for it
 
@@ -53,7 +53,7 @@ That matters for agentic development: a good interface gives tests something dur
 `to-prd` is a step in the main build chain:
 
 ```txt
-grill-with-docs → to-prd → to-issues → tdd
+grill-with-docs → to-prd → to-issues → implement → code-review
 ```
 
-Reach for it after the plan and domain language are resolved, and before you break the work into implementation tickets. Its key neighbours are [grill-with-docs](https://aihero.dev/skills-grill-with-docs), which sharpens the context so the PRD is precise, and [to-issues](https://aihero.dev/skills-to-issues), which turns the PRD into independently-grabbable issues for [tdd](https://aihero.dev/skills-tdd) to implement. When you're unsure which skill or flow fits, [ask-matt](https://aihero.dev/skills-ask-matt) routes you.
+Reach for it after the plan and domain language are resolved, and before you break the work into implementation tickets. Its key neighbours are [grill-with-docs](https://aihero.dev/skills-grill-with-docs), which sharpens the context so the PRD is precise, and [to-issues](https://aihero.dev/skills-to-issues), which turns the PRD into independently-grabbable issues for [implement](https://aihero.dev/skills-implement) to build. When you're unsure which skill or flow fits, [ask-matt](https://aihero.dev/skills-ask-matt) routes you.
