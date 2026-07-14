@@ -1,34 +1,38 @@
 ---
 name: why-changed
-description: Pull upstream, then read what arrived and why the author changed it — one HTML page per updated skill, diff plus intent.
+description: Sync the fork and pull, then read what arrived and why the author changed it — one HTML page per updated skill, diff plus intent.
 disable-model-invocation: true
 ---
 
 # Why Changed
 
-Upstream moved. You want to know what landed in your fork, and why the author did it.
-
 You care about **arrivals** — what this pull dragged in — not what upstream authored today. A fork merges upstream in batches, so a commit written last week arrives today. Filter by the calendar and you get an empty report on the very day a week of work lands.
 
 ## 1. Gate on a clean tree
 
-Run `git status --porcelain`. If it prints anything, stop: list the dirty paths and say the pull needs a clean tree. Do not stash, do not commit, do not merge.
+This skill is **read-only** on your repo, but for the two things it owns: the HTML pages, and the one `.gitignore` line that hides them. A dirty tree is the human's to resolve.
 
-This skill reads. Its only write is HTML.
+Run `git status --porcelain`. If it prints anything, stop: list the dirty paths and say the pull needs a clean tree.
 
 **Done when** the tree is clean, or you have stopped and handed the dirty paths back.
 
-## 2. Pull, and capture the range
+## 2. Sync the fork, pull, and capture the range
+
+`origin` is a **fork**, so upstream's commits reach this clone in **two hops**: upstream → fork on GitHub, then fork → local. `git pull` walks only the second one. Walk the first yourself, or the pull arrives empty however much upstream has written.
 
 1. `git rev-parse HEAD` → `BEFORE`
-2. `git pull`
-3. `git rev-parse HEAD` → `AFTER`
+2. `gh repo view --json owner,name,parent` → the fork, `owner.login/name`, and its upstream, `parent.owner.login/parent.name`
+3. `gh repo sync <fork> --source <upstream>` — naming the fork routes this through GitHub's merge-upstream, which fast-forwards the fork, or merges upstream into it when the fork carries commits of its own. (Bare `gh repo sync` targets the local repo instead, and only ever fast-forwards.)
+4. `git pull`
+5. `git rev-parse HEAD` → `AFTER`
 
-If `BEFORE` equals `AFTER`, report that nothing arrived and stop. Write no files, touch nothing on disk.
+Three conditions end the run right here, each handed back with the failing command's own output: `gh` absent or unauthenticated; `parent` null, so there is no upstream to sync from; a sync refused because upstream and the fork's own commits touch the same lines. That last one is a merge conflict, and it stays the human's to resolve — `resolving-merge-conflicts` is the skill for it. Forcing a refused sync would throw the fork's own commits away, so a refusal is a stop.
+
+If `BEFORE` equals `AFTER`, report that nothing arrived and stop.
 
 `BEFORE..AFTER` is **the range**. Every later step reads only from it.
 
-**Done when** you hold a non-empty range, or have reported no arrivals.
+**Done when** the fork sits on top of upstream and you hold a non-empty range — or you have stopped, handing back the sync's refusal or the empty pull.
 
 ## 3. Map the range onto skills
 
@@ -38,6 +42,8 @@ A skill's **scope** — the only paths whose diff belongs on its page:
 
 - `skills/<bucket>/<name>/**`
 - `docs/<bucket>/<name>.md`
+
+Discovery runs on `skills/` alone: a change under a skill's own folder is what makes it an arrival. `docs/<bucket>/<name>.md` never triggers a page on its own — it is supplementary, and rides along on the diff of a skill already in the work.
 
 Aggregate files (`README.md`, `.claude-plugin/plugin.json`, `CLAUDE.md`) stay out. A cross-cutting commit would otherwise repeat the same README lines on every skill's page.
 
@@ -59,44 +65,19 @@ An **update** is one account plus every commit in the range that carries it, so 
 
 ## 5. Write one page per skill
 
-Write `.why-changed/<name>.html` for each changed skill, overwriting any file already there. Add `.why-changed/` to `.gitignore` if it is not already listed.
+Ensure `.gitignore` lists `.why-changed/`, then write `.why-changed/<name>.html` for each changed skill, overwriting any file already there.
 
 Pages from earlier runs stay on disk, so every page states **when it was generated**, in UTC+8. That timestamp is what tells the reader the page in front of them is this run's.
 
-The page heads with the skill name, the range as short hashes, and that generation time. Its body is one section per update, **oldest first**, each section carrying four things in order:
+One section per update, **oldest first**, each carrying four things:
 
 1. **Commit** — time in UTC+8, subject, and a link to `<repository.url from package.json>/commit/<sha>`.
 2. **The account** — the changeset body, verbatim, in the author's English.
 3. **Intent (简体中文)** — ① what problem existed before the change ② how this change solves it.
-4. **The diff** — `git show --format= <sha> -- <scope>` for each of the update's commits, oldest first, concatenated into one diff2html view.
+4. **The diff** — `git show --format= <sha> -- <scope>` for each of the update's commits, oldest first.
 
 The intent analysis is the only thing on the page that reading the raw changeset would not already give the reader. So do not paraphrase the account back at them — it sits directly above. Reach for what the account leaves out: an account states the change as a *conclusion*, while the problem that provoked it lives in the diff's lines. Read them, and say what the author was fighting.
 
-**Done when** every changed skill has a page, and every update on it has all four parts.
+Render all four through the skeleton in [HTML-REPORT.md](HTML-REPORT.md) — read it before writing the first page.
 
-## The HTML
-
-diff2html from CDN, one view per update. Raw diffs ride in `<script type="text/plain">` so nothing needs escaping — except a literal `</script>` inside a diff, which becomes `<\/script>`.
-
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
-
-<script type="text/plain" id="diff-1">
-diff --git a/... (raw unified diff)
-</script>
-<div id="view-1"></div>
-
-<script>
-  document.querySelectorAll('[id^="diff-"]').forEach((src) => {
-    const view = document.getElementById(src.id.replace("diff-", "view-"));
-    new Diff2HtmlUI(view, src.textContent, {
-      drawFileList: false,
-      matching: "lines",
-      outputFormat: "side-by-side",
-    }).draw();
-  });
-</script>
-```
-
-Style the page yourself: readable prose column, the account visually distinct from the intent, sections separated so a reader scrolling down feels the chronology.
+**Done when** every changed skill has a page carrying its generation timestamp, every update on it has all four parts, and `.gitignore` lists `.why-changed/`.
