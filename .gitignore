@@ -4,3 +4,4 @@ node_modules
 # Local symlink into .agents/skills/, absolute path — machine-specific.
 # Scoped to this one entry so upstream can still track other .claude/ files.
 .claude/skills/why-changed
+.why-changed/
