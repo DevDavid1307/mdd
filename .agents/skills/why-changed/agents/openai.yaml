@@ -1,5 +1,5 @@
 interface:
   display_name: "Why Changed"
-  short_description: "Read what a pull brought in, and why"
+  short_description: "Understand how upstream updates reshape your use of each skill"
 policy:
   allow_implicit_invocation: false
