@@ -1,5 +1,5 @@
 interface:
   display_name: "Why Changed"
-  short_description: "Understand how upstream updates reshape your use of each skill"
+  short_description: "Understand what upstream skill updates mean for you"
 policy:
   allow_implicit_invocation: false

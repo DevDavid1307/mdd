@@ -1,13 +1,12 @@
 ---
 name: why-changed
-description: Update your mental models of skills delivered by an upstream sync.
+description: Understand what upstream skill updates mean for you as a user.
 disable-model-invocation: true
 ---
 
 # Why Changed
 
-Create local HTML reports that help the user build or update their
-mental model of each skill delivered by an upstream sync.
+Create a local HTML report for each skill changed by an upstream sync.
 
 ## 1. Sync and capture arrivals
 
@@ -20,18 +19,16 @@ the fork into the current local branch. Record `AFTER` from `HEAD`.
 If they match, report that no skill changes arrived and stop.
 Otherwise, `BEFORE..AFTER` is this run's range.
 
-## 2. Build the understanding
+## 2. Understand the update as a user
 
 Find every changed `skills/<bucket>/<name>/` directory in the range.
+If none changed, report that no skill changes arrived and stop.
 
-For each skill, use its before and after versions, diff, history,
-and any relevant context to help the user build or update a mental
-model of the skill.
+Read the before and after versions, diff, and history from a user's
+perspective. Help the user update their mental model.
+Ground explanations in evidence.
 
-Let the update determine what deserves explanation. Ground the
-explanation in evidence, distinguishing documented intent from inference.
-
-## 3. Present the mental model
+## 3. Show what it means
 
 For each skill, use "show-me" to present the understanding developed
 in step 2 as `.why-changed/<bucket>-<name>.html` in Simplified Chinese.
